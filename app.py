@@ -1,3 +1,4 @@
+import numpy as np
 import os
 from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -11,10 +12,9 @@ from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 
 load_dotenv()
-os.getenv("GOOGLE_API_KEY")
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+os.getenv("AIzaSyCsCTgsXDZDnKHzU0vgr_ITbxAzA78NOvo")
+genai.configure(api_key=os.getenv("AIzaSyCsCTgsXDZDnKHzU0vgr_ITbxAzA78NOvo"))
 
-# read all pdf files and return text
 
 
 def get_pdf_text(pdf_docs):
@@ -25,21 +25,19 @@ def get_pdf_text(pdf_docs):
             text += page.extract_text()
     return text
 
-# split text into chunks
-
+# to split text
 
 def get_text_chunks(text):
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=10000, chunk_overlap=1000)
     chunks = splitter.split_text(text)
-    return chunks  # list of strings
+    return chunks  
 
-# get embeddings for each chunk
 
 
 def get_vector_store(chunks):
     embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001")  # type: ignore
+        model="models/embedding-001")
     vector_store = FAISS.from_texts(chunks, embedding=embeddings)
     vector_store.save_local("faiss_index")
 
@@ -71,7 +69,7 @@ def clear_chat_history():
 
 def user_input(user_question):
     embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001")  # type: ignore
+        model="models/embedding-001") 
 
     new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True) 
     docs = new_db.similarity_search(user_question)
@@ -91,7 +89,7 @@ def main():
         page_icon="🤖"
     )
 
-    # Sidebar for uploading PDF files
+# sidebar code
     with st.sidebar:
         st.title("Menu:")
         pdf_docs = st.file_uploader(
@@ -102,14 +100,12 @@ def main():
                 text_chunks = get_text_chunks(raw_text)
                 get_vector_store(text_chunks)
                 st.success("Done")
-
-    # Main content area for displaying chat messages
+#display chat
     st.title("Chat with PDF files using Gemini🤖")
     st.write("Welcome to the chat!")
     st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
-    # Chat input
-    # Placeholder for chat messages
+
 
     if "messages" not in st.session_state.keys():
         st.session_state.messages = [
@@ -124,7 +120,6 @@ def main():
         with st.chat_message("user"):
             st.write(prompt)
 
-    # Display chat messages and bot response
     if st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
@@ -139,6 +134,10 @@ def main():
             message = {"role": "assistant", "content": full_response}
             st.session_state.messages.append(message)
 
+embeddings = GoogleGenerativeAIEmbeddings(
+    google_api_key="AIzaSyCsCTgsXDZDnKHzU0vgr_ITbxAzA78NOvo",
+    model="default_model_name"
+)
 
 if __name__ == "__main__":
     main()
